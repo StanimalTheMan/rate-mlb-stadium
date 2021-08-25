@@ -1,5 +1,7 @@
-import { PrismaClient, prismaVersion } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import express from "express";
+
+const prisma = new PrismaClient();
 
 function getStadiumRoutes() {
   const router = express.Router();
@@ -7,6 +9,8 @@ function getStadiumRoutes() {
   router.get("/", getStadiums);
 
   router.get("/:stadiumName", getStadium);
+
+  return router;
 }
 
 export async function getStadiumReviews(stadiums) {
@@ -68,4 +72,4 @@ async function getStadium(req, res, next) {
   res.status(200).json({ stadium });
 }
 
-export default getStadiumRoutes;
+export { getStadiumRoutes };
