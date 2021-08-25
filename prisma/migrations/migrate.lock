@@ -1,0 +1,4 @@
+# Prisma Migrate lockfile v1
+
+20210825154558-initial-migration
+20210825155741-add-location-property-to-stadium-model
