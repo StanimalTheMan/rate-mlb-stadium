@@ -8,7 +8,7 @@ function getStadiumRoutes() {
 
   router.get("/", getStadiums);
 
-  router.get("/:stadiumName", getStadium);
+  router.get("/:stadiumId", getStadium);
 
   return router;
 }
@@ -48,7 +48,7 @@ async function getStadiums(req, res) {
 async function getStadium(req, res, next) {
   const stadium = await prisma.stadium.findUnique({
     where: {
-      name: req.params.stadiumName,
+      id: req.params.stadiumId,
     },
     include: {
       reviews: {
