@@ -10,6 +10,8 @@ function getStadiumRoutes() {
 
   router.get("/:stadiumId", getStadium);
 
+  router.post("/:stadiumId/reviews", addReview);
+
   return router;
 }
 
@@ -68,6 +70,49 @@ async function getStadium(req, res, next) {
       statusCode: 404,
     });
   }
+
+  res.status(200).json({ stadium });
+}
+
+async function addReview(req, res, next) {
+  const stadium = await prisma.stadium.findUnique({
+    where: {
+      id: req.params.stadiumId,
+    },
+  });
+
+  if (!stadium) {
+    return next({
+      message: `No stadium found with id: "${req.params.stadiumId}"`,
+      statusCode: 404,
+    });
+  }
+
+  const review = await prisma.review.create({
+    data: {
+      text: req.body.text,
+      foodRating: req.body.foodRating,
+      fansAtmosphereRating: req.body.fansAtmosphereRating,
+      cleanlinessRating: req.body.cleanlinessRating,
+      overallRating: Math.floor(
+        (req.body.foodRating +
+          req.body.fansAtmosphereRating +
+          req.cleanlinessRating) /
+          3
+      ),
+      recommends: req.body.recommends,
+      user: {
+        connect: {
+          id: req.user.id,
+        },
+      },
+      stadium: {
+        connect: {
+          id: req.params.stadiumId,
+        },
+      },
+    },
+  });
 
   res.status(200).json({ stadium });
 }
