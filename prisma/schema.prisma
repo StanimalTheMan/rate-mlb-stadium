@@ -45,9 +45,5 @@ model Stadium {
   distanceToCenterFieldInFeet     Int 
   type                            String
   roofType                        String 
-  overallFoodRating               Int @default(3)
-  overallFansAtmosphereRating     Int @default(3)
-  overallCleanlinessRating        Int @default(3)
-  overallRating                   Int @default(3)
   reviews                         Review[]
 }
