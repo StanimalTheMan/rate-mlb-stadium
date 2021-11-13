@@ -39,7 +39,7 @@ async function getStadiums(req, res) {
   });
 
   if (!stadiums.length) {
-    return res.status(200).json({ stadiums });
+    return res.status(200).json(stadiums);
   }
 
   stadiums = await getStadiumReviews(stadiums);
@@ -64,12 +64,66 @@ async function getStadium(req, res, next) {
     },
   });
 
-  if (!stadium) {
-    return next({
-      message: `No stadium found with name: "${req.params.stadiumName}"`,
-      statusCode: 404,
-    });
-  }
+  const avgOverallRating = await prisma.review.findFirst({
+    where: {
+      stadiumId: req.params.stadiumId,
+    },
+    // _avg: {
+    //   overallRating: true,
+    // },
+    // _count: {
+    //   overallRating: true,
+    // },
+  });
+
+  // const avgFoodRating = await prisma.review.aggregate({
+  //   where: {
+  //     stadiumId: req.params.stadiumId,
+  //   },
+  //   _avg: {
+  //     foodRating: true,
+  //   },
+  //   _count: {
+  //     foodRating: true,
+  //   },
+  // });
+
+  // const avgFansAtmosphereRating = await prisma.review.aggregate({
+  //   where: {
+  //     stadiumId: req.params.stadiumId,
+  //   },
+  //   _avg: {
+  //     fansAtmosphereRating: true,
+  //   },
+  //   _count: {
+  //     fansAtmosphereRating: true,
+  //   },
+  // });
+
+  // const avgCleanlinessRating = await prisma.review.aggregate({
+  //   where: {
+  //     stadiumId: req.params.stadiumId,
+  //   },
+  //   _avg: {
+  //     cleanlinessRating: true,
+  //   },
+  //   _count: {
+  //     cleanlinessRating: true,
+  //   },
+  // });
+
+  // if (!stadium) {
+  //   return next({
+  //     message: `No stadium found with name: "${req.params.stadiumName}"`,
+  //     statusCode: 404,
+  //   });
+  // }
+
+  // stadium.overallRating = avgOverallRating._avg.overallRating;
+  // stadium.avgFoodRating = avgFoodRating._avg.foodRating;
+  // stadium.avgFansAtmosphereRating =
+  //   avgFansAtmosphereRating._avg.fansAtmosphereRating;
+  // stadium.avgCleanlinessRating = avgCleanlinessRating._avg.cleanlinessRating;
 
   res.status(200).json({ stadium });
 }
