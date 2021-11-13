@@ -1,0 +1,49 @@
+datasource db {
+  provider = "postgresql"
+  url = "***"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String        @id @default(uuid())
+  createdAt   DateTime      @default(now())
+  username    String
+  email       String        @unique
+  avatar      String        @default("https://scontent-ort2-2.cdninstagram.com/v/t51.2885-19/s150x150/82559664_3161307737426774_8687807477812559872_n.jpg?_nc_ht=scontent-ort2-2.cdninstagram.com&_nc_ohc=llb3VCRb-mkAX_XTEi3&oh=64f0323db646c01299e513e3337b83ff&oe=5E8620BF")
+  about       String        @default("")
+  reviews     Review[]
+}
+
+model Review { 
+  id                        String        @id @default(uuid())
+  createdAt                 DateTime      @default(now())
+  foodRating                Int           @default(3)
+  fansAtmosphereRating      Int           @default(3)
+  cleanlinessRating         Int           @default(3)
+  overallRating             Int           @default(3)
+  text                      String 
+  recommends                Boolean
+  userId                    String
+  stadiumId                 String
+  user                      User          @relation(fields: [userId], references: [id])
+  stadium                   Stadium       @relation(fields: [stadiumId], references: [id])
+}
+
+model Stadium {
+  id                              String        @id @default(uuid())
+  createdAt                       DateTime      @default(now())
+  image                           String
+  name                            String 
+  capacity                        Int
+  location                        String
+  surface                         String
+  team                            String
+  opened                          Int
+  distanceToCenterFieldInFeet     Int 
+  type                            String
+  roofType                        String 
+  reviews                         Review[]
+}

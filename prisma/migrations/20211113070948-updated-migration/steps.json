@@ -1,0 +1,25 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "DeleteField",
+      "model": "Stadium",
+      "field": "overallFoodRating"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Stadium",
+      "field": "overallFansAtmosphereRating"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Stadium",
+      "field": "overallCleanlinessRating"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Stadium",
+      "field": "overallRating"
+    }
+  ]
+}
