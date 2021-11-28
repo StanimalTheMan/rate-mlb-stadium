@@ -11,6 +11,7 @@ function getAuthRoutes() {
   // 'http://localhost:3001/api/v1/auth/current-user'
   router.post("/google-login", googleLogin);
   router.get("/me", protect, me);
+  router.get("/signout", signout);
 
   return router;
 }
@@ -47,6 +48,9 @@ async function me(req, res) {
   res.status(200).json({ user: req.user });
 }
 
-function signout(req, res) {}
+function signout(req, res) {
+  res.clearCookie("token");
+  res.status(200).json({});
+}
 
 export { getAuthRoutes };
