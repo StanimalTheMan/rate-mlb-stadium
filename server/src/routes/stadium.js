@@ -15,9 +15,14 @@ function getStadiumRoutes() {
   return router;
 }
 
-export async function getStadiumReviews(stadiums) {
+async function getStadiumReviews(stadiums) {
   for (const stadium of stadiums) {
     const reviews = await prisma.review.findMany({
+      where: {
+        stadiumId: {
+          equals: stadium.id,
+        },
+      },
       include: {
         user: true,
         stadium: true,
