@@ -11,7 +11,8 @@ function getStadiumRoutes() {
 
   router.get("/search", searchStadiums);
 
-  router.post("/:stadiumId/review", protect, addReview);
+  router.post("/:stadiumId/reviews", protect, addReview);
+  router.delete("/:stadiumId/reviews/:reviewId", protect, deleteReview);
 
   router.get("/:stadiumId", getStadium);
 
@@ -132,6 +133,29 @@ async function addReview(req, res, next) {
   });
 
   res.status(200).json({ review });
+}
+
+async function deleteReview(req, res) {
+  const review = await prisma.review.findUnique({
+    where: {
+      id: req.params.reviewId,
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  if (review.userId !== req.user.id) {
+    return res.status(401).send("You are not authorized to delete this review");
+  }
+
+  await prisma.review.delete({
+    where: {
+      id: req.params.reviewId,
+    },
+  });
+
+  res.status(200).json({});
 }
 
 async function getStadium(req, res, next) {
