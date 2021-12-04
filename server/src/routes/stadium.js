@@ -8,6 +8,8 @@ function getStadiumRoutes() {
 
   router.get("/", getStadiums);
 
+  router.get("/search", searchStadiums);
+
   router.get("/:stadiumId", getStadium);
 
   router.post("/:stadiumId/reviews", addReview);
@@ -15,25 +17,23 @@ function getStadiumRoutes() {
   return router;
 }
 
-async function getStadiumReviews(stadiums) {
-  for (const stadium of stadiums) {
-    const reviews = await prisma.review.findMany({
-      where: {
-        stadiumId: {
-          equals: stadium.id,
-        },
+async function getStadiumReviews(stadium) {
+  const reviews = await prisma.review.findMany({
+    where: {
+      stadiumId: {
+        equals: stadium.id,
       },
-      include: {
-        user: true,
-        stadium: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    stadium.reviews = reviews;
-  }
-  return stadiums;
+    },
+    include: {
+      user: true,
+      stadium: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  stadium.reviews = reviews;
+  return stadium;
 }
 
 async function getStadiums(req, res) {
@@ -47,8 +47,47 @@ async function getStadiums(req, res) {
     return res.status(200).json({ stadiums });
   }
 
-  stadiums = await getStadiumReviews(stadiums);
+  for (let stadium of stadiums) {
+    stadium = await getStadiumReviews(stadium);
+  }
+  res.status(200).json({ stadiums });
+}
 
+async function searchStadiums(req, res, next) {
+  if (!req.query.query) {
+    return next({
+      message: "Please enter a search query",
+      statusCode: 400,
+    });
+  }
+
+  const stadiums = await prisma.stadium.findMany({
+    where: {
+      OR: [
+        {
+          name: {
+            contains: req.query.query,
+            mode: "insensitive",
+          },
+        },
+        {
+          team: {
+            contains: req.query.query,
+            mode: "insensitive",
+          },
+        },
+      ],
+    },
+  });
+  console.log(stadiums);
+
+  if (!stadiums.length) {
+    return res.status(200).json({ stadiums });
+  }
+
+  for (let stadium of stadiums) {
+    stadium = await getStadiumReviews(stadium);
+  }
   res.status(200).json({ stadiums });
 }
 
