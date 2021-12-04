@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
+import { protect } from "../middleware/authorization";
 
 const prisma = new PrismaClient();
 
@@ -10,9 +11,9 @@ function getStadiumRoutes() {
 
   router.get("/search", searchStadiums);
 
-  router.get("/:stadiumId", getStadium);
+  router.post("/:stadiumId/review", protect, addReview);
 
-  router.post("/:stadiumId/reviews", addReview);
+  router.get("/:stadiumId", getStadium);
 
   return router;
 }
@@ -91,6 +92,48 @@ async function searchStadiums(req, res, next) {
   res.status(200).json({ stadiums });
 }
 
+async function addReview(req, res, next) {
+  const stadium = await prisma.stadium.findUnique({
+    where: {
+      id: req.params.stadiumId,
+    },
+  });
+
+  if (!stadium) {
+    return next({
+      message: `No stadium found with id: "${req.params.stadiumId}"`,
+      statusCode: 404,
+    });
+  }
+  const review = await prisma.review.create({
+    data: {
+      text: req.body.text,
+      foodRating: req.body.foodRating,
+      fansAtmosphereRating: req.body.fansAtmosphereRating,
+      cleanlinessRating: req.body.cleanlinessRating,
+      overallRating: Math.floor(
+        (req.body.foodRating +
+          req.body.fansAtmosphereRating +
+          req.body.cleanlinessRating) /
+          3
+      ),
+      recommends: req.body.recommends,
+      user: {
+        connect: {
+          id: req.user.id,
+        },
+      },
+      stadium: {
+        connect: {
+          id: req.params.stadiumId,
+        },
+      },
+    },
+  });
+
+  res.status(200).json({ review });
+}
+
 async function getStadium(req, res, next) {
   let stadium = await prisma.stadium.findUnique({
     where: {
@@ -137,49 +180,6 @@ async function getStadium(req, res, next) {
   stadium.avgFoodRating = avgFoodRating;
   stadium.avgFansAtmosphereRating = avgFansAtmosphereRating;
   stadium.avgCleanlinessRating = avgCleanlinessRating;
-
-  res.status(200).json({ stadium });
-}
-
-async function addReview(req, res, next) {
-  const stadium = await prisma.stadium.findUnique({
-    where: {
-      id: req.params.stadiumId,
-    },
-  });
-
-  if (!stadium) {
-    return next({
-      message: `No stadium found with id: "${req.params.stadiumId}"`,
-      statusCode: 404,
-    });
-  }
-
-  const review = await prisma.review.create({
-    data: {
-      text: req.body.text,
-      foodRating: req.body.foodRating,
-      fansAtmosphereRating: req.body.fansAtmosphereRating,
-      cleanlinessRating: req.body.cleanlinessRating,
-      overallRating: Math.floor(
-        (req.body.foodRating +
-          req.body.fansAtmosphereRating +
-          req.cleanlinessRating) /
-          3
-      ),
-      recommends: req.body.recommends,
-      user: {
-        connect: {
-          id: req.user.id,
-        },
-      },
-      stadium: {
-        connect: {
-          id: req.params.stadiumId,
-        },
-      },
-    },
-  });
 
   res.status(200).json({ stadium });
 }
