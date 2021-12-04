@@ -92,82 +92,51 @@ async function searchStadiums(req, res, next) {
 }
 
 async function getStadium(req, res, next) {
-  const stadium = await prisma.stadium.findUnique({
+  let stadium = await prisma.stadium.findUnique({
     where: {
       id: req.params.stadiumId,
     },
-    include: {
-      reviews: {
-        include: {
-          user: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
-    },
   });
 
-  const avgOverallRating = await prisma.review.findFirst({
-    where: {
-      stadiumId: req.params.stadiumId,
-    },
-    // _avg: {
-    //   overallRating: true,
-    // },
-    // _count: {
-    //   overallRating: true,
-    // },
-  });
+  if (!stadium) {
+    return next({
+      message: `No stadium found with name: "${req.params.stadiumName}"`,
+      statusCode: 404,
+    });
+  }
 
-  // const avgFoodRating = await prisma.review.aggregate({
-  //   where: {
-  //     stadiumId: req.params.stadiumId,
-  //   },
-  //   _avg: {
-  //     foodRating: true,
-  //   },
-  //   _count: {
-  //     foodRating: true,
-  //   },
-  // });
+  stadium = await getStadiumReviews(stadium);
+  // probs better approach than using 4 different reducers to do similar logic
+  const overallRatingReducer = (previousValue, currentValue) =>
+    previousValue + currentValue.overallRating;
+  const foodRatingReducer = (previousValue, currentValue) =>
+    previousValue + currentValue.foodRating;
+  const fansAtmosphereReducer = (previousValue, currentValue) =>
+    previousValue + currentValue.fansAtmosphereRating;
+  const cleanlinessRatingReducer = (previousValue, currentValue) =>
+    previousValue + currentValue.cleanlinessRating;
+  const numReviews = stadium.reviews.length;
+  // probs better approach out there than hardcoded default review values below
+  let avgOverallRating = 3;
+  let avgFoodRating = 3;
+  let avgFansAtmosphereRating = 3;
+  let avgCleanlinessRating = 3;
+  if (numReviews > 0) {
+    // probs inefficient to use reduce if there is only one review but this is temp approach
+    avgOverallRating =
+      stadium.reviews.reduce(overallRatingReducer) / numReviews;
+    avgFoodRating = stadium.reviews.reduce(foodRatingReducer) / numReviews;
+    avgFansAtmosphereRating =
+      stadium.reviews.reduce(fansAtmosphereReducer) / numReviews;
+    avgCleanlinessRating =
+      stadium.reviews.reduce(cleanlinessRatingReducer) / numReviews;
+  }
 
-  // const avgFansAtmosphereRating = await prisma.review.aggregate({
-  //   where: {
-  //     stadiumId: req.params.stadiumId,
-  //   },
-  //   _avg: {
-  //     fansAtmosphereRating: true,
-  //   },
-  //   _count: {
-  //     fansAtmosphereRating: true,
-  //   },
-  // });
-
-  // const avgCleanlinessRating = await prisma.review.aggregate({
-  //   where: {
-  //     stadiumId: req.params.stadiumId,
-  //   },
-  //   _avg: {
-  //     cleanlinessRating: true,
-  //   },
-  //   _count: {
-  //     cleanlinessRating: true,
-  //   },
-  // });
-
-  // if (!stadium) {
-  //   return next({
-  //     message: `No stadium found with name: "${req.params.stadiumName}"`,
-  //     statusCode: 404,
-  //   });
-  // }
-
-  // stadium.overallRating = avgOverallRating._avg.overallRating;
-  // stadium.avgFoodRating = avgFoodRating._avg.foodRating;
-  // stadium.avgFansAtmosphereRating =
-  //   avgFansAtmosphereRating._avg.fansAtmosphereRating;
-  // stadium.avgCleanlinessRating = avgCleanlinessRating._avg.cleanlinessRating;
+  // properties below don't exist on stadium model but whatever?
+  stadium.avgOverallRating = avgOverallRating;
+  stadium.avgFoodRating = avgFoodRating;
+  stadium.avgFansAtmosphereRating = avgFansAtmosphereRating;
+  stadium.avgCleanlinessRating = avgCleanlinessRating;
 
   res.status(200).json({ stadium });
 }
