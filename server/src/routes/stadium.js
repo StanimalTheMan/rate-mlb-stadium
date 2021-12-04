@@ -39,7 +39,7 @@ async function getStadiums(req, res) {
   });
 
   if (!stadiums.length) {
-    return res.status(200).json(stadiums);
+    return res.status(200).json({ stadiums });
   }
 
   stadiums = await getStadiumReviews(stadiums);
