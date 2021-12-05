@@ -27,12 +27,12 @@ async function getProfile(req, res, next) {
     });
   }
 
-  const reviews = prisma.review.findMany({
+  const reviews = await prisma.review.findMany({
     where: {
       userId: req.params.userId,
     },
   });
-
+  console.log(reviews);
   user.reviews = reviews;
 
   res.status(200).json({ user });
