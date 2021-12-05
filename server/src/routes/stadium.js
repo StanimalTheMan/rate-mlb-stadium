@@ -49,9 +49,9 @@ async function getStadiums(req, res) {
     return res.status(200).json({ stadiums });
   }
 
-  for (let stadium of stadiums) {
-    stadium = await getStadiumReviews(stadium);
-  }
+  // for (let stadium of stadiums) {
+  //   stadium = await getStadiumReviews(stadium);
+  // }
   res.status(200).json({ stadiums });
 }
 
