@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
-import { getAuthUser } from "../middleware/authorization";
+import { getAuthUser, protect } from "../middleware/authorization";
 
 const prisma = new PrismaClient();
 
@@ -8,6 +8,7 @@ function getUserRoutes() {
   const router = express.Router();
 
   router.get("/:userId", getAuthUser, getProfile);
+  router.put("/", protect, editUser);
   // router.get("/:userId/reviews", getUserReviews);
 
   return router;
@@ -34,6 +35,23 @@ async function getProfile(req, res, next) {
   });
   console.log(reviews);
   user.reviews = reviews;
+
+  res.status(200).json({ user });
+}
+
+async function editUser(req, res) {
+  const { username, avatar, about } = req.body;
+
+  const user = await prisma.user.update({
+    where: {
+      id: req.user.id,
+    },
+    data: {
+      username,
+      avatar,
+      about,
+    },
+  });
 
   res.status(200).json({ user });
 }
