@@ -174,8 +174,10 @@ async function getStadium(req, res, next) {
 
   stadium = await getStadiumReviews(stadium);
   // probs better approach than using 4 different reducers to do similar logic
-  const overallRatingReducer = (previousValue, currentValue) =>
-    previousValue + currentValue.overallRating;
+  const overallRatingReducer = (previousValue, currentValue) => {
+    // console.log("Sfsdfsdfsdfsd", currentValue);
+    return previousValue + currentValue.overallRating;
+  };
   const foodRatingReducer = (previousValue, currentValue) =>
     previousValue + currentValue.foodRating;
   const fansAtmosphereReducer = (previousValue, currentValue) =>
@@ -190,13 +192,14 @@ async function getStadium(req, res, next) {
   let avgCleanlinessRating = 3;
   if (numReviews > 0) {
     // probs inefficient to use reduce if there is only one review but this is temp approach
+    console.log("1", stadium.reviews.reduce(overallRatingReducer, 0));
     avgOverallRating =
-      stadium.reviews.reduce(overallRatingReducer) / numReviews;
-    avgFoodRating = stadium.reviews.reduce(foodRatingReducer) / numReviews;
+      stadium.reviews.reduce(overallRatingReducer, 0) / numReviews;
+    avgFoodRating = stadium.reviews.reduce(foodRatingReducer, 0) / numReviews;
     avgFansAtmosphereRating =
-      stadium.reviews.reduce(fansAtmosphereReducer) / numReviews;
+      stadium.reviews.reduce(fansAtmosphereReducer, 0) / numReviews;
     avgCleanlinessRating =
-      stadium.reviews.reduce(cleanlinessRatingReducer) / numReviews;
+      stadium.reviews.reduce(cleanlinessRatingReducer, 0) / numReviews;
   }
 
   // properties below don't exist on stadium model but whatever?
